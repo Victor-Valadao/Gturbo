@@ -1,0 +1,19 @@
+#!/bin/bash
+# SBATCH --account=INF24_fldturb_0     # G100
+# SBATCH --partition=g100_all_serial   # G100
+
+#SBATCH --account=INF24_fldturb_1     # LEONARDO
+#SBATCH --partition=boost_usr_prod    # LEONARDO
+# SBATCH --qos=boost_qos_dbg					 # DBG NODE (only leo)
+
+# SBATCH --nodes=1
+#SBATCH --mem=16000
+#SBATCH --job-name=cond8k
+#SBATCH --time=21:20:00
+#SBATCH --gres=gpu:1
+#SBATCH --array="0-29%1"
+
+
+# module load nvhpc/22.3  # G100
+module load nvhpc/23.11    # LEONARDO
+srun ./main.exe
