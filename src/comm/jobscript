@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Bash file to send jobs using SLURM scheduler
+
+# SBATCH --account=INF25_fldturb_1          # G100
+# SBATCH --partition=g100_all_serial        # G100
+# SBATCH --partition=g100_usr_interactive   # G100
+
+#SBATCH --account=INF25_fldturb       # LEONARDO
+#SBATCH --partition=boost_usr_prod    # LEONARDO
+#SBATCH --qos=boost_qos_dbg	      # DBG NODE (only leo)
+
+# SBATCH --nodes=1
+# SBATCH --cpus-per-task=25
+#SBATCH --mem=16000
+#SBATCH --job-name=eknse8k128
+#SBATCH --time=00:30:00
+#SBATCH --gres=gpu:1
+# SBATCH --array="0-3%1"
+
+
+# module load nvhpc/22.3  # G100
+module load nvhpc/23.11    # LEONARDO
+# srun ./nse.exe
+# srun ./lag.exe
+srun ./lya.exe
+
