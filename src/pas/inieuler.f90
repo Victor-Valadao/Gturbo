@@ -53,6 +53,7 @@ subroutine inieuler(z,w,ifr)
   write(6,*)' Starting Frame      = ',ifr
   write(6,*)' Total step number   = ',npas
   write(6,*)' Outputs Frames/Diag = ',iout,imix
+  write(6,*)' Saving Precision    = ',prec
   write(6,*)' ------------------------------------------------'
   write(6,*)' '
   

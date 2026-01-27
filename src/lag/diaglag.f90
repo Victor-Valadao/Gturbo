@@ -1,7 +1,8 @@
 ! Write Lagrangian observables, including:
-! writeftle()  <- writes './files/ftle*.*'
-! writelyap()  <- writes './files/lyapunov.*'
-! writelag()   <- writes './fields/Xp.*' and './fields/Dp.*'
+! writeftle()  <- writes './files/ftle*.*' (22,23)
+! writelyap()  <- writes './files/lyapunov.*' (17)
+! writelag()   <- writes './fields/Xp.*' and './fields/Dp.*' 
+! write_int_vel_pos()  <- writes './files/local.*' (19)
 
 !=================================================
 

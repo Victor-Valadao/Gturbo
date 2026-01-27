@@ -7,7 +7,7 @@
 
 xlx	yly
 nu	alpnu	mu	alpmu	alpv
-dt	rko	prec	order
+dt	rko	prec	oitrp
 npas	iout	imix	nlyal
 rtrunc	truncate
 famp	fk1	fk2

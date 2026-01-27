@@ -52,6 +52,9 @@ subroutine inieuler(z,w,ifr,seed)
   write(6,*)' Starting Frame      = ',ifr
   write(6,*)' Total step number   = ',npas
   write(6,*)' Outputs Frames/Diag = ',iout,imix
+  write(6,*)' Rescal/saving lyap  = ',nlyap
+  write(6,*)' Saving Precision    = ',prec
+  write(6,*)' Initial amplitude   = ',real(delta0)
   write(6,*)' ------------------------------------------------'
   write(6,*)' '
   
@@ -72,7 +75,7 @@ subroutine inieuler(z,w,ifr,seed)
   if (ifr.eq.0) then ! Generate random noise
 !     call readf(z,1)
 	z=0.d0
-    call add_noise(w,seed)
+    call add_noise(w,seed)   ! ads homogeneous noise if 0
     w = z + w
     call writep(w,0)
     call writef(z,0)

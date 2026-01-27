@@ -1,3 +1,6 @@
+# Make file for version 2.0 of gturb 
+# Last update 27/01/2026 - Victor Valadão
+
 NSE 	 = src/nse/main
 LYA 	 = src/lya/main
 LAG 	 = src/lag/main

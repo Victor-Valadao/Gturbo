@@ -1,8 +1,8 @@
 ! Code initialization. Print parameter, call initialization
 ! of wave vector, call initialization of forcing, 
 ! load / initialize starting field
-! Also include in the end a subroutine to calculate
-! memory consumption inside the GPU
+! Also define log-spaced point to sample structure functions
+
 
 subroutine inieuler(z,ifr)
   use paran
@@ -57,6 +57,8 @@ subroutine inieuler(z,ifr)
   write(6,*)' Starting Frame      = ',ifr
   write(6,*)' Total step number   = ',npas
   write(6,*)' Outputs Frames/Diag = ',iout,imix
+  write(6,*)' Out strucs / skip   = ',istru,nskip
+  write(6,*)' Saving Precision    = ',prec
   write(6,*)' ------------------------------------------------'
   write(6,*)' '
   
@@ -71,7 +73,7 @@ subroutine inieuler(z,ifr)
   ! Initialize wavenumber, see defk.f90
   call defk
   
-  ! Initialize forcing, see iniforcing1.f90
+  ! Initialize forcing, see iniforcing.f90
   call iniforcing
   
   ! Check previous simulations
@@ -81,8 +83,11 @@ subroutine inieuler(z,ifr)
   	! Otherwise, start from zero
     z(:,:,:) = 0.d0
   endif
+  
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Define log-binned scales !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-! Define log-binned scales
 iold = 0
 is   = 1
 j    = 0

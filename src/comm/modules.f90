@@ -1,6 +1,6 @@
 ! Module with all parameters of the simulation
 
-! Sim parameters
+! Simulation parameters
 module paran
  implicit none
  integer, parameter :: NX=8192, NY=NX
@@ -11,7 +11,7 @@ module paran
  integer, parameter :: NBIN=NX/2
 end module paran
 
-! FFT parameters and plans
+! FFT parameters and FFT plans
 module stream
   use cufft
   use cudafor
@@ -28,7 +28,7 @@ module plan
 	integer plan_inv
 end module plan
 
-! physical parameters 
+! Physical parameters 
 module commphy
 	use paran
 	implicit none
@@ -39,10 +39,10 @@ module commphy
 	integer, dimension(NX) :: iss
 end module commphy
 
-! forcing parameters
+! Forcing parameters
 module commforc
 	implicit none
-	integer, parameter :: NFORC = 2048
+	integer, parameter :: NFORC = 2048    ! Raise this number if there are too many forced modes
 	real(8), dimension(2,NFORC) :: ff
 	real(8) :: famp,k1f,k2f
 	integer, dimension(NFORC) :: ikxf, ikyf
@@ -91,6 +91,7 @@ implicit none
 	integer :: nlyal
 end module
 
+! Time tracking
 module time_keeper
 implicit none
 	integer :: start(8), now(8)

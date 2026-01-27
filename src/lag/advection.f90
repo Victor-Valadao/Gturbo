@@ -3,7 +3,7 @@
 ! Periodic reboxing      -> rebox()
 ! Linear interpolation   -> interpolation()
 
-! Advection of Lagrangian tracer particles
+! Advection of Lagrangian tracer particles saving in the first field
 subroutine advection(xp,dxp,xpold,dxpold,step_dt)
 use paran
 use commphy
@@ -88,7 +88,7 @@ return
 end 
 
 ! --------------------------------------------------------------
-! First order linear interpolation
+! n-th order interpolation (only up to 2 in this version)
 
 subroutine interpolate(u,v,ux,uy,vx,xp,dp)
 use paran
