@@ -1,4 +1,4 @@
-! Direct and inverse FFT routine
+! Direct nd inverse FFT routine
 ! The direct has the normalization 1/(NX*NY)
 
 subroutine fft_dir(z,plan)

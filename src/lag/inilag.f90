@@ -1,5 +1,4 @@
-! Lagrangian initialization
-! load / initialize positions and perturbation vectors
+! Inilag.f90
 
 ! Initialization of the Lagrangian part
 subroutine inilag(xp,dxp,ifr,seed)
@@ -30,11 +29,11 @@ co=0.d0
 if (ifr==0) then
  do ip=1,NP
  
- ! particles positions x=[0,2pi)
+ ! particles x=[0,2pi)
  xp(1,ip)=pi2*rann(seed)
  xp(2,ip)=pi2*rann(seed)
  
-  ! random orthonormal vectors
+  ! random orthonormal vector
   a=2.d0*(rann(seed)-0.5)
   dxp(1,1,ip)=a
   dxp(1,2,ip)=sqrt(1-a**2)

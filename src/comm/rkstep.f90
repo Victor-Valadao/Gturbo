@@ -1,4 +1,4 @@
-! Runge-Kutta steps on time evolution, including:
+! Steps on time evolution, including:
 ! step()   <- Rk2
 ! step4()  <- Rk4
 ! Split of Emk matrix deprecated in this version

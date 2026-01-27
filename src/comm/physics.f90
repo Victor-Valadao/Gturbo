@@ -32,6 +32,7 @@ do 10 i=1,NX2P1
 if ((i.eq.1).and.(j.eq.1)) goto 10
 	k2=fkxs(i)+fkys(j)
 	ka=k2**(alpv/2.d0)
+! 	ka=k2
 	kx=fkx(i)/ka
 	ky=fky(j)/ka
 	u(1,i,j)=-ky*z(2,i,j)

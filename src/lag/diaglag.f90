@@ -1,8 +1,7 @@
 ! Write Lagrangian observables, including:
-! writeftle()  <- writes './files/ftle*.*' (22,23)
-! writelyap()  <- writes './files/lyapunov.*' (17)
-! writelag()   <- writes './fields/Xp.*' and './fields/Dp.*' 
-! write_int_vel_pos()  <- writes './files/local.*' (19)
+! writeftle()  <- writes './files/ftle*.*'
+! writelyap()  <- writes './files/lyapunov.*'
+! writelag()   <- writes './fields/Xp.*' and './fields/Dp.*'
 
 !=================================================
 
@@ -94,8 +93,6 @@ v2=0.d0
 v1=0.d0
 !$acc enter data copyin(p1,p2,v1,v2)
 
-!it would be good to save the velocity gradients in the particle position
-
 !$acc parallel loop collapse(2) present(xp,p1,p2,v1,v2,dxp)
 do ip=1,NP
 do i=1,nv
@@ -112,7 +109,7 @@ enddo
 do ip=1,NP
  p2(1,ip)=rebox2(p2(1,ip),xlx)
  p2(2,ip)=rebox2(p2(2,ip),xly)
- v2(1,ip)=rebox2(v2(1,ip),xlx) ! this does not exist right?
+ v2(1,ip)=rebox2(v2(1,ip),xlx)
  v2(2,ip)=rebox2(v2(2,ip),xly)
 end do
 !$acc end parallel

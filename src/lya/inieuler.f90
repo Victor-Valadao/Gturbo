@@ -20,8 +20,8 @@ subroutine inieuler(z,w,ifr,seed)
   read(9,*)nu,alpnu,mu,alpmu,alpv
   read(9,*)dt,rko,prec
   read(9,*)npas,iout,imix,nlyap
-  read(9,*)rtrunc,truncate
-  read(9,*)famp,k1f,k2f,delta0
+  read(9,*)rtrunc,truncate,eta,beta
+  read(9,*)famp,k1f,k2f,delta0,ktayl
   close(9)
 	
   write(6,*)' alphaTurb + Eulerian FTLE'
@@ -50,11 +50,8 @@ subroutine inieuler(z,w,ifr,seed)
   write(6,*)' '
   write(6,*)' Time step           = ',real(dt)
   write(6,*)' Starting Frame      = ',ifr
-  write(6,*)' Total step number   = ',npas
+ 	write(6,*)' Total step number   = ',npas
   write(6,*)' Outputs Frames/Diag = ',iout,imix
-  write(6,*)' Rescal/saving lyap  = ',nlyap
-  write(6,*)' Saving Precision    = ',prec
-  write(6,*)' Initial amplitude   = ',real(delta0)
   write(6,*)' ------------------------------------------------'
   write(6,*)' '
   
@@ -73,12 +70,11 @@ subroutine inieuler(z,w,ifr,seed)
   call iniforcing
   
   if (ifr.eq.0) then ! Generate random noise
-!     call readf(z,1)
-	z=0.d0
-    call add_noise(w,seed)   ! ads homogeneous noise if 0
-    w = z + w
-    call writep(w,0)
-    call writef(z,0)
+    call readf(z,0)
+!     call perturb(w,eta*xlx/NX,beta,seed)
+!     w = z + w
+!     call writep(w,1)
+!     call writef(z,1)
 !     ifr=ifr+1
     
   else   ! Otherwise load previous simulations

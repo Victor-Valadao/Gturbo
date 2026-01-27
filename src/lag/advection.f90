@@ -3,7 +3,7 @@
 ! Periodic reboxing      -> rebox()
 ! Linear interpolation   -> interpolation()
 
-! Advection of Lagrangian tracer particles saving in the first field
+! Advection of Lagrangian tracer particles
 subroutine advection(xp,dxp,xpold,dxpold,step_dt)
 use paran
 use commphy
@@ -88,7 +88,7 @@ return
 end 
 
 ! --------------------------------------------------------------
-! n-th order interpolation (only up to 2 in this version)
+! First order linear interpolation
 
 subroutine interpolate(u,v,ux,uy,vx,xp,dp)
 use paran
@@ -129,9 +129,6 @@ do ip=1,NP
  cj(0)=(1.0-dy)
  cj(1)=dy
  
- !it would be good to save the velocity gradients in the position of the particle
- 
-! Need to be tested
 !  !  Interpolation coefficients for the second order
 !  ci(0)=0.5*(1.0-dx)*(2.0-dx)
 !  ci(1)=dx*(2.0-dx)
@@ -140,7 +137,6 @@ do ip=1,NP
 !  cj(1)=dy*(2.0-dy)
 !  cj(2)=-0.5*dy*(1.0-dy)
  
-! general interpolation of order oitrp
 !  do l=0,oitrp
 !  do il=1,oitrp+1
 !   ci(l) = ci(l) + co(oitrp,l+1,il) * dx**dble(il-1)

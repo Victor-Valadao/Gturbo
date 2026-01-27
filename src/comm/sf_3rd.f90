@@ -1,7 +1,3 @@
-! Diagnostics for structure function
-! SF -> './files/strucs.*' (40)
-
-
 subroutine strucs(z,u,v)
 use paran
 use cufft
@@ -47,7 +43,7 @@ do is = 1, nscale
       dzz = z(ii,j) - z(i,j)
       dul = u(ii,j) - u(i,j)
       dut = v(ii,j) - v(i,j)
-      do ll = 1,8              
+      do ll = 1,8
         !$acc atomic
         temp(1,ll) = temp(1,ll) + abs(dzz)**(ll)
         !$acc atomic

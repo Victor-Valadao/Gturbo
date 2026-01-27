@@ -1,0 +1,13 @@
+6.2831853071795864769d0	6.2831853071795864769d0
+2.0d-4	1.0d0	1.0d0	0.0d0	2.0d0
+5.0d-4	4	4
+50000	50000	100
+0.6666666666666666667d0	1
+1.0d0	2.9d0	4.0d0
+
+xlx   yly
+nu    alpnu	mu	alpmu	alpv
+dt		rko		prec
+npas	iout  imix
+rtrunc	truncate
+famp  fk1	fk2

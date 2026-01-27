@@ -8,15 +8,15 @@
 
 #SBATCH --account=INF25_fldturb       # LEONARDO
 #SBATCH --partition=boost_usr_prod    # LEONARDO
-#SBATCH --qos=boost_qos_dbg	          # DBG NODE (only leo)
+# SBATCH --qos=boost_qos_dbg	      # DBG NODE (only leo)
 
 # SBATCH --nodes=1
 # SBATCH --cpus-per-task=25
 #SBATCH --mem=16000
-#SBATCH --job-name=job
-#SBATCH --time=00:30:00
-#SBATCH --gres=gpu:1              # of GPUs
-# SBATCH --array="0-3%1"          # SEQUENCE OF JOBS
+#SBATCH --job-name=eknse8k25
+#SBATCH --time=17:00:00
+#SBATCH --gres=gpu:1
+#SBATCH --array="0-39%1"
 
 
 # module load nvhpc/22.3  # G100

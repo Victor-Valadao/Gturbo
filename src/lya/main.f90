@@ -18,7 +18,7 @@ integer :: ipas,ifr,jfr,istat,seed,seedp,ierr,err_dir,err_inv,i,j
 integer :: startTime, stopTime, trate
 integer(kind=cuda_count_kind) :: fre,tota
 real :: lambda
-real(8) :: s,t0,et_s
+real(8) :: s,t0,et_s,DeD
 character(len=40) nome
 
 call startclock()
@@ -59,10 +59,16 @@ seedp=seed
 write(nome,"('./files/global.',i3.3)")ifr
 Open(unit=18,file=nome,form='formatted',status='unknown',access='append')
 
+write(nome,"('./files/enegspectra.',i3.3)")ifr
+Open(unit=14,file=nome,form='formatted',status='unknown',access='append')
+
+write(nome,"('./files/enegdiff.',i3.3)")ifr
+Open(unit=15,file=nome,form='formatted',status='unknown',access='append')
+
 write(nome,"('./files/globaldiff.',i3.3)")ifr
 Open(unit=16,file=nome,form='formatted',status='unknown',access='append')
 
-write(nome,"('./files/lyapunov.',i3.3)")ifr
+write(nome,"('./files/resctime.',i3.3)")ifr
 Open(unit=17,file=nome,form='formatted',status='unknown',access='append')
 
 write(nome,"('./files/spectra.',i3.3)")ifr
@@ -102,6 +108,18 @@ call show_mem(fre,tota,1)
 ! Shows the amount of memory consumed in the GPU
 call show_mem(fre,tota,2)
 
+if (ifr.eq.0) then ! Generate random noise
+	call fft_dir(z,plan_dir)
+	call perturb(z,w,eta*xlx/NX,beta,seed)
+	if (truncate.eq.1) then
+	 call trunc(w)
+	end if
+	call fft_inv(w,plan_inv)
+	call fft_inv(z,plan_inv)
+	!$acc update host(w,z)
+	call writep(w,0)
+end if
+
 ! DirFFT the initial field + dealiasing
 call fft_dir(z,plan_dir)
 call fft_dir(w,plan_dir)
@@ -110,12 +128,13 @@ if (truncate.eq.1) then
  call trunc(w)
 end if
 
-! Rescale to be sure the energy is correct
-call rescale(z,w,eed)
-
-! Compute initial spectrum diff and global diffs
+DeD=0.d0
+! $acc update host(z,w)
+call enediff(z,w,DeD,0)
+call enespec(z,w,0)
+! call rescale(z,w,eed)
 call spectrumdiff(z,w,0)
-call globdiff(z,w,0)
+! call globdiff(z,w,0)
 
 jfr=1
 ! =============================================================
@@ -143,6 +162,7 @@ do ipas=1,npas
 	call nlt(znl ,u,v)            ! nlt to compute the flux at t correctly
 	call nlt(zne ,u,v)
 		
+  	! $acc update host(z,znl,w,zne)
   	call spectrum(z,ipas)        ! Write Energy and Enstrophy spectra
     call fluxes(z,znl,ipas)      ! Write Energy and Enstrophy fluxes
     call glob(z,ipas)            ! Write Dissipative terms
@@ -175,15 +195,47 @@ do ipas=1,npas
 	! ----------------------------------------------------------
 	! Lyapunov
 	if (mod(ipas,nlyap).eq.0) then 
-	 call rescale(z,w,eed)
-	 !$acc update host(eed)
-	 lambda=0.d0
-	 lambda=-log(eed)/dble(dt*nlyap)
-	 write(17,93)real(t),real(lambda),real(0.5d0*(delta0/eed)**2)
-	 93 format(3g)
-	 call flush(17)
-	 write(6,*)"Nt = ",ipas,", ly = ",real(lambda),", eed = ",real(0.5d0*(delta0/eed)**2)
-	call flush(6)
+	 Ded=0.d0
+	 !$acc kernels present(z,w,znl,zne) ! Copy z to znl
+		znl = z
+		zne = w
+	 !$acc end kernels
+	 
+	 call enediff(znl,zne,DeD,ipas)
+!      call enespec(z,w,0)
+	 
+	 if (DeD.gt.4) then
+! 	 	 write(6,*)"Vrau cond on em neguin"
+! 		 call flush(6)
+		 		 
+		 call enespec(znl,zne,ipas)
+		 write(17,*)ipas
+		 call perturb(znl,zne,eta*xlx/NX,beta,seed)
+		write(6,*)"RESCALED EM KRL PORRA EM ",ipas
+		call flush(6)
+		 
+		 if (truncate.eq.1) then
+		 call trunc(znl)
+		 call trunc(zne)
+		 
+		!$acc kernels present(zne,w)
+		w = zne
+		!$acc end kernels
+! 	
+! 		call fft_inv(znl , plan_inv)  ! FFt to save in the physical space
+! 		call fft_inv(zne , plan_inv)
+! 		!$acc update host(znl,zne) 
+! 	
+! 		call writef2(znl ,ifr,jfr)        ! Save field
+! 		call writep2(zne ,ifr,jfr)
+! 		jfr=jfr+1
+! 	
+! 		write(6,*)"Saved w field, seed and curframe at timestep = ",ipas
+! 		call flush(6)
+		 
+		end if
+		 
+	  end if
 	end if
 	! ----------------------------------------------------------
   
@@ -215,6 +267,8 @@ open(unit=1,file='./curframe.dat')
  write(1,*)ifr,t
 close(1)
 
+close(14)
+close(15)
 close(16)
 close(17)
 close(18)

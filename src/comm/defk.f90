@@ -56,6 +56,25 @@ do 15 i=1,NX2P1
  epk(i,j)=dexp(-0.5d0*dt*scra)
 15 continue
 
+! km2=(k1f+k2f)/2.d0
+! km2=k1f
+
+! emk(1,1) = 0.d0
+! epk(1,1) = 0.d0
+! do 15 j=1,NY
+! do 15 i=1,NX2P1
+!  if ((i.eq.1).and.(j.eq.1)) goto 15
+!  fk2=fkxs(i)+fkys(j)
+!  scra=nu*fk2**alpnu
+!  if (sqrt(fk2).le.km2) then
+!    scra=scra+mu*fk2**alpmu
+!  end if
+!    
+!  emk(i,j)=dexp(-0.5d0*dt*scra)  
+!  scra=nup*fk2**alpnup+mup*fk2**alpmup
+!  epk(i,j)=dexp(-0.5d0*dt*scra)
+! 15 continue
+
 ! Maximum wavenumbers
 fkxsmax=fkxs(NX2P1)
 fkysmax=fkys(NY2P1)

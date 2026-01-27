@@ -1,10 +1,6 @@
 ! Constant amplitude forcing with random phases in 
 ! wave vector space. Explicitly conjugated.
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! forcing 					
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 subroutine forcing(z,seed)
 !$acc routine(rann) seq
 use paran
@@ -42,9 +38,7 @@ end do
 return
 end
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Random seed for the forcing
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Subroutine to evolve the random seed for the forcing
 
 real function rann(irand)
 !$acc routine seq  

@@ -111,6 +111,7 @@ do ipas=1,npas
 	!$acc end kernels
 	call nlt(znl,u,v)            ! nlt to compute the flux at t correctly
 		
+  	! $acc update host(z,znl)
   	call spectrum(z,ipas)        ! Write Energy and Enstrophy spectra
     call fluxes(z,znl,ipas)      ! Write Energy and Enstrophy fluxes
     call glob(z,ipas)            ! Write Dissipative terms
@@ -125,7 +126,8 @@ do ipas=1,npas
 	call fft_inv(u, plan_inv)
 	call fft_inv(v, plan_inv)
 	
-	call strucs(znl,u,v)
+	! $acc update host(znl,u,v)
+! 	call strucs(znl,u,v)
 	
   endif
   

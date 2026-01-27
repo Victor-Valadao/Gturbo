@@ -2,7 +2,7 @@
 ! step()   <- Rk2
 ! step4()  <- Rk4
 ! Split of Emk matrix deprecated in this version
-! USE OF ADVECTION OR ADVECTION2 DEPENDS ON WHERE YOU SAVE THE RESULT
+
 
 !=================================================================
 ! 2-nd order Runge Kutta with explicit integration of linear terms

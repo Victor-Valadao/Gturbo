@@ -1,9 +1,9 @@
 ! Module with all parameters of the simulation
 
-! Simulation parameters
+! Sim parameters
 module paran
  implicit none
- integer, parameter :: NX=8192, NY=NX
+ integer, parameter :: NX=4096, NY=NX
  integer, parameter :: NXP2=NX+2
  integer, parameter :: NX2=NX/2, NX2P1=NX2+1, NX2P2=NX2+2
  integer, parameter :: NY2=NY/2, NY2P1=NY2+1, NY2P2=NY2+2
@@ -11,7 +11,7 @@ module paran
  integer, parameter :: NBIN=NX/2
 end module paran
 
-! FFT parameters and FFT plans
+! FFT parameters and plans
 module stream
   use cufft
   use cudafor
@@ -28,21 +28,21 @@ module plan
 	integer plan_inv
 end module plan
 
-! Physical parameters 
+! physical parameters 
 module commphy
 	use paran
 	implicit none
-	real(8) :: xlx,xly,dkx,dky,prec
+	real(8) :: xlx,xly,dkx,dky,prec,eta,beta
 	real(8) :: nu,mu,alpnu,alpmu,alpv
 	real(8) :: dt,dt2,dt3,dt6,sdt,t
 	real(8) :: inpz,inpe,nscale
 	integer, dimension(NX) :: iss
 end module commphy
 
-! Forcing parameters
+! forcing parameters
 module commforc
 	implicit none
-	integer, parameter :: NFORC = 2048    ! Raise this number if there are too many forced modes
+	integer, parameter :: NFORC = 2048
 	real(8), dimension(2,NFORC) :: ff
 	real(8) :: famp,k1f,k2f
 	integer, dimension(NFORC) :: ikxf, ikyf
@@ -71,7 +71,7 @@ end module commk
 ! lyap parameters
 module lyap
 	implicit none
-	real(8) :: delta0,eed
+	real(8) :: delta0,eed,ktayl
 	integer :: nlyap
 end module lyap
 
@@ -91,7 +91,6 @@ implicit none
 	integer :: nlyal
 end module
 
-! Time tracking
 module time_keeper
 implicit none
 	integer :: start(8), now(8)

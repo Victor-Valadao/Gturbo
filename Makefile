@@ -1,6 +1,3 @@
-# Make file for version 2.0 of gturb 
-# Last update 27/01/2026 - Victor Valadão
-
 NSE 	 = src/nse/main
 LYA 	 = src/lya/main
 LAG 	 = src/lag/main
@@ -61,6 +58,7 @@ lya: $(LYA).f90
 	@scp src/comm/jobscript gturb/jobscript
 	@scp src/lya/main.exe gturb/lya.exe
 	@scp src/comm/seed.0 gturb/files/seed.000
+# 	@scp w.000.060 gturb/fields/w.000
 	@scp src/comm/curframe.dat gturb/curframe.dat
 	@scp src/lya/params.dat gturb/params.dat
 	@scp src/reset.sh gturb/reset.sh

@@ -1,3 +1,5 @@
+! Main computation loop
+
 use cudafor
 use openacc
 use cufft
@@ -9,21 +11,16 @@ use commsim
 use commphy
 use commk
 use commforc
-use modlag
-use time_keeper
 implicit none
 
-real(8), dimension(NS) :: z,znl,zne,u,v,dux,duy,dvx
-real(8), dimension(NV,2,NP) :: dp,dpnl,dpne
-real(8), dimension(2,NP) :: xp,xpnl,xpne
-integer :: ipas,ifr,jfr,istat,seed,seedp,ierr,err_dir,err_inv,i,j
+real(8), dimension(NS) :: z,znl,znew,u,v
+integer :: ipas,ifr,jfr,istat,seed,ierr,err_dir,err_inv,i,j
 integer :: startTime, stopTime, trate
 integer(kind=cuda_count_kind) :: fre,tota
-real(8) :: s,t0,et_s
-character*40 nome
+real :: s
+character(len=40) nome
 
-call startclock()
-! call system_clock(startTime)
+call system_clock(startTime)
 
 ! Shows the amount of memory consumed in the GPU
 call show_mem(fre,tota,0)
@@ -49,34 +46,18 @@ open(unit=2,file=nome)
  read(2,*)seed
 close(2)
 
-seedp=seed
 ! Initializes wave number, forcing, initial field z (real space)
-call inieuler(z, ifr, seedp)
+call inieuler(z, ifr)
 
 ! Opening files to save global quantities and useful information
-write(nome,"('./files/lyapunov.',i3.3)")ifr
-Open(unit=17,file=nome,form='formatted',status='unknown',access='append')
-
 write(nome,"('./files/global.',i3.3)")ifr
 Open(unit=18,file=nome,form='formatted',status='unknown',access='append')
-
-write(nome,"('./files/local.',i3.3)")ifr
-Open(unit=19,file=nome,form='formatted',status='unknown',access='append')
 
 write(nome,"('./files/spectra.',i3.3)")ifr
 Open(unit=20,file=nome,form='formatted',status='unknown',access='append')
 
-write(nome,"('./files/ftle1.',i3.3)")ifr
-open(unit=22,file=nome,form='formatted',status='unknown',access='append')
-
-write(nome,"('./files/ftle2.',i3.3)")ifr
-open(unit=23,file=nome,form='formatted',status='unknown',access='append')
-
 write(nome,"('./files/fluxes.',i3.3)")ifr
 Open(unit=30,file=nome,form='formatted',status='unknown',access='append')
-
-seedp=seed
-call inilag(xp,dp,ifr,seedp)
 
 ! Shows the amount of memory consumed in the GPU
 call show_mem(fre,tota,1)
@@ -90,13 +71,13 @@ call show_mem(fre,tota,1)
 !$acc enter data copyin(fkx,fky,fkxs,fkys,jc) !<-- calc in defk called in inieuler
 !$acc enter data copyin(dt,dt2,dt3,dt6,sdt)   !<-- calc in inieuler/loaded
 !$acc enter data copyin(seed)                 !<-- read in main used in forcing/rann
-!$acc enter data copyin(znl,zne,u,v)          !<-- allocate memory for znl, u, v
-!$acc enter data copyin(dux,duy,dvx)
-!$acc enter data copyin(co,lyap,ftle)
-!$acc enter data copyin(xp,xpnl,xpne)
-!$acc enter data copyin(dp,dpnl,dpne)
+!$acc enter data copyin(znl,u,v)              !<-- allocate memory for znl, u, v
 
-!$acc enter data copyin(z)           !<-- pass the initial field to the GPU
+if (rko.eq.4) then
+	!$acc enter data copyin(znew)
+endif
+
+!$acc enter data copyin(z)                    !<-- pass the initial field to the GPU
 
 ! Shows the amount of memory consumed in the GPU
 call show_mem(fre,tota,2)
@@ -114,43 +95,33 @@ do ipas=1,npas
   t=t+dt
   
   if (rko.eq.4) then
-  	call step4(z,znl,zne,u,v,dux,duy,dvx,xp,dp,xpnl,dpnl,xpne,dpne)
+  	call step4(z,znl,znew,u,v)
   else
-  	call step(z,znl,u,v,dux,duy,dvx,xp,dp,xpnl,dpnl)
+  	call step(z,znl,u,v)
   end if
   
   if (mod(ipas,imix).eq.0) then  ! Write diagnostics each imix
-    !$acc kernels present(z,znl,xp,xpnl,dp,dpnl)
-	znl = z
-	xpnl= xp
-	dpnl= dp
-	!$acc end kernels
-	call nlt(znl,u,v,dux,duy,dvx,xpnl,dpnl)
+    !$acc kernels present(z,znl) ! Copy z to znl
+		znl=z
+		!$acc end kernels
+		call nlt(znl,u,v)            ! nlt to compute the flux at t correctly
 		
-  	! $acc update host(z,znl,zne)
+  	!$acc update host(z,znl)
   	call spectrum(z,ipas)        ! Write Energy and Enstrophy spectra
     call fluxes(z,znl,ipas)      ! Write Energy and Enstrophy fluxes
     call glob(z,ipas)            ! Write Dissipative terms
+
   endif
   
   if ((mod(ipas,iout).eq.0).and.(ipas.ne.npas)) then  ! Save vorticity each iout
-    !$acc kernels present(z,znl) ! Copy z to znl
-	znl = z
-	!$acc end kernels
-	
-	call fft_inv(znl , plan_inv)  ! FFt to save in the physical space
-	!$acc update host(znl,xp,dp) 
+  	!$acc kernels present(z,znl) ! Copy z to znl to save without touching z
+		znl=z
+		!$acc end kernels  
+		
+		call fft_inv(znl, plan_inv)  ! FFt to save in the physical space
+		!$acc update host(znl,seed) 
   	
-  	write(nome,"('./fields/Dp.',i3.3,'.',i3.3)")ifr,jfr
-	open(unit=70,file=nome,form='unformatted')
-	write(70)dp
-	close(70)
-
-	write(nome,"('./fields/Xp.',i3.3,'.',i3.3)")ifr,jfr
-	open(unit=70,file=nome,form='unformatted')
-	write(70)xp
-	close(70)
-  	call writef2(znl ,ifr,jfr)        ! Save field
+  	call writef2(znl,ifr,jfr)        ! Save field
   	jfr=jfr+1
   	
   	write(6,*)"Saved w field, seed and curframe at timestep = ",ipas
@@ -158,39 +129,8 @@ do ipas=1,npas
   	
   endif
   
-	! ----------------------------------------------------------
-	! Lyapunov
-	if (mod(ipas,nlyal).eq.0) then 
-	 ! ! 
-! 	 !$acc kernels present(z,znl,xp,xpnl,dp,dpnl)
-! 	 znl = z
-! 	 xpnl= xp
-! 	 dpnl= dp
-! 	 !$acc end kernels
-!      call write_int_vel_pos(znl,u,v,dux,duy,dvx,xpnl,dpnl,t)
-	
-	
- 	 call rescale(dp)
-	 !$acc update host(lyap,ftle)
-
-! 	 !$acc update host(dp)
-! 	 call rescale(dp)
-! 	 !$acc update device(dp)
-	 
-	 t0=dble(dt*nlyal)
-	 lyap=lyap/t0
-	 ftle=ftle/t0
-	 call writelyap(t)
-	 call writeftle
-	 write(6,*)"Nt = ",ipas,", ly = ",real(lyap(1))," and ",real(lyap(2))
-! 	 call show_mem(fre,tota,2)
-	call flush(6)
-	end if
-	! ----------------------------------------------------------
-  
   ! ! Add forcing contribution
   call forcing(z,seed)
-  
 end do
 ! --------------------------------------
 
@@ -210,12 +150,8 @@ open(unit=1,file='./curframe.dat')
  write(1,*)ifr,t
 close(1)
 
-close(17)
 close(18)
-close(19)
 close(20)
-close(22)
-close(23)
 close(30)
 
 ! ========================================================
@@ -223,31 +159,20 @@ close(30)
 ! Exit GPU data Freeing the memory
 
 !$acc exit data delete(emk) finalize
+if (rko.eq.4) then
+	!$acc exit data delete(znew) finalize
+endif
+
 !$acc exit data delete(ikxf,ikyf,ff) finalize
 !$acc exit data delete(fkx,fky,fkxs,fkys,jc) finalize
 !$acc exit data delete(dt,dt2,dt3,dt6,sdt) finalize
 !$acc exit data delete(seed) finalize
-!$acc exit data delete(co,lyap,ftle) finalize
-!$acc exit data delete(u,v,znl,zne) finalize
-!$acc exit data delete(dux,duy,dvx) finalize
-!$acc exit data delete(xpnl,xpne) finalize
-!$acc exit data delete(dpnl,dpne) finalize
+!$acc exit data delete(u,v,znl) finalize
 
-!$acc exit data copyout(z,xp,dp) finalize
+!$acc exit data copyout(z) finalize
 
-! Export field to a file @ fields/w.* /Xp.* /Dp.*
+! Export field to a file @ Frames/w.*
 call writef(z,ifr)
-
-write(nome,"('./fields/Dp.',i3.3)")ifr
-open(unit=70,file=nome,form='unformatted')
-write(70)dp
-close(70)
-
-write(nome,"('./fields/Xp.',i3.3)")ifr
-open(unit=70,file=nome,form='unformatted')
-write(70)xp
-close(70)
-
 ! ========================================================
 
 err_inv = err_inv + cufftDestroy(plan_inv)
@@ -256,14 +181,9 @@ istat = cudaStreamDestroy(stream1)
 istat = cudaStreamDestroy(stream2)
 
 ! Calculate the "mean" time per iteration
-! call system_clock(stopTime,trate)
-! s=(dble(stopTime-startTime)/dble(dble(npas)*real(trate,8)))
-! write(6,*),"Mean time per iteration      = ",s
-! call flush(6)
-
-call elapsedtime_s(et_s)
-s=dlog(et_s)-dlog(dble(npas))
-write(6,*),"Mean time per iteration      = ",dexp(s)
+call system_clock(stopTime,trate)
+s=(real(stopTime-startTime)/(real(npas)*real(trate,8)))
+write(6,*),"Mean time per iteration      = ",s
 call flush(6)
 
 end

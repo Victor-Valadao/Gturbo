@@ -1,13 +1,8 @@
-! Diagnostics for the secondly integrated field, includes:
-! spectrum            -> './files/spectrap.*' (21)
-! fluxes              -> './files/fluxesp.*'  (31)
-! global dissipations -> './globalp.*'        (19)
-
 !!!!!!!!!!!!!!!!!!!!!
 ! Calculate spectra !
 !!!!!!!!!!!!!!!!!!!!!
 
-subroutine spectrump(z,ifr)
+subroutine spectrum(z,ifr)
 use paran
 use commk
 use commphy
@@ -59,7 +54,7 @@ wn(NBIN)=1.d0
 
 !$acc update host(sp,sz,wn)
 do ib=1,NBIN
- write(21,99)real(dk*(ib-1)),real(sp(ib)/wn(ib)),real(sz(ib)/wn(ib))
+ write(20,99)real(dk*(ib-1)),real(sp(ib)/wn(ib)),real(sz(ib)/wn(ib))
  99 format(3g)
 !  write(20,99)real(dk*(ib-1)),real(sp(ib)/wn(ib)),real(sz(ib)/wn(ib)),real(wn(ib))
 !  99 format(4g)
@@ -74,13 +69,14 @@ end
 ! Calculate fluxes  !
 !!!!!!!!!!!!!!!!!!!!!
 
-subroutine fluxesp(z,znl,ifr)
+subroutine fluxes(z,znl,ifr)
 use paran
 use commk
 use commphy
 implicit none
 
 real(8), dimension(2,NX2P1,NY) :: z,znl
+
 real(8), dimension(NBIN) :: fle,flz,flem,flzm,wn,wle
 real(8) k2,k,ka,dk,fe,fz,fac,rho
 integer i,j,ib,jb,ifr
@@ -115,8 +111,8 @@ do 10 j=1,NY
     	flzm(ib)=flzm(ib)+fac*fz
 		!$acc atomic
     	flem(ib)=flem(ib)+fac*fe
-!     	$acc atomic
-! 		wn(ib)=wn(ib)+fac/2.d0
+    	!$acc atomic
+		wn(ib)=wn(ib)+fac/2.d0
     end if
 10 continue
 !$acc end parallel
@@ -125,19 +121,18 @@ do 10 j=1,NY
 do i=1,NBIN   ! Flux across the mode k towards large scales
 	flz(i)=sum(flzm(i:NBIN))
 	fle(i)=sum(flem(i:NBIN))
-! 	wle(i)=(1+sum(wn(1:i)))/(dk*dble(i-1))**2
+	wle(i)=(1+sum(wn(1:i)))/(dk*dble(i-1))**2
 end do
 !$acc end parallel
 
-! $acc kernels present(wle)
-! wle(1)=1.d0
-! wle(NBIN)=1.d0
-! $acc end kernels
+!$acc kernels present(wle)
+wle(1)=1.d0
+wle(NBIN)=1.d0
+!$acc end kernels
 
 !$acc update host(flz,fle,wle)
 do ib=1,NBIN
-!  write(30,99)real(dk*(ib-1)),real(fle(ib)/wle(ib)/rho),real(flz(ib)/wle(ib)/rho)
- write(31,99)real(dk*(ib-1)),real(fle(ib)),real(flz(ib))
+ write(30,99)real(dk*(ib-1)),real(fle(ib)/wle(ib)/rho),real(flz(ib)/wle(ib)/rho)
  99 format(3g)
 end do
 
@@ -149,7 +144,7 @@ end
 ! Calculate dissipative terms !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine globp(z,ifr)
+subroutine glob(z,ifr)
 use paran
 use commk
 use commphy
@@ -196,13 +191,13 @@ do 10 i=1,NX2P1
 !$acc end parallel
 
 !$acc update host(ee,zz,dise_nu,dise_mu,disz_nu,disz_mu)
-write(19,99)real(ifr*dt),real(zz),real(ee),real(disz_nu),real(disz_mu),real(inpz),real(dise_nu),real(dise_mu),real(inpe)
-call flush(19)
+write(18,99)real(ifr*dt),real(zz),real(ee),real(disz_nu),real(disz_mu),real(inpz),real(dise_nu),real(dise_mu),real(inpe)
+call flush(18)
 
 99 format(9g)
 
 ! write(6,*)"t  = ",real(ifr*dt),", Z  = ",real(zz),", E  = ",real(ee)
-! write(6,*)"Nt = ",ifr,", Zb = ",real((disz_nu+disz_mu)/inpz),", Eb = ",real((dise_nu+dise_mu)/inpe)
+write(6,*)"Nt = ",ifr,", Zb = ",real((disz_nu+disz_mu)/inpz),", Eb = ",real((dise_nu+dise_mu)/inpe)
 ! write(6,*)" "
 
 call flush(6)
