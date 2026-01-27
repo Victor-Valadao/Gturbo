@@ -1,4 +1,4 @@
-! Diagnostics for the secondly integrated field, includes:
+! Diagnostics for the second integrated field, includes:
 ! spectrum            -> './files/spectrap.*' (21)
 ! fluxes              -> './files/fluxesp.*'  (31)
 ! global dissipations -> './globalp.*'        (19)

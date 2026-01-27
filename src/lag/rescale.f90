@@ -1,6 +1,6 @@
 ! Some lyap functions, including:
-! rescale()   -> rescaling of the pert field
-! add_noise() -> initial perturbation
+! rescale()   -> rescaling of the perturbed field
+! add_noise() -> eulerian perturbation (why?)
 
 
 ! --------------------------------------------------------------
@@ -26,8 +26,8 @@ do ip=1,NP
   ! max lyap
   scra = dxp(1,1,ip)*dxp(1,1,ip) + dxp(1,2,ip)*dxp(1,2,ip)
   
-  ftle(ip,1)=ftle(ip,1)+dlog(scra)/2.d0
-  lyap(1)=lyap(1)+norm*dlog(scra)/2.d0
+  ftle(ip,1)=ftle(ip,1)+dlog(scra)/2.d0    ! each particle
+  lyap(1)=lyap(1)+norm*dlog(scra)/2.d0     ! mean over the particles
   
   ! min lyap
   prod = dxp(1,1,ip)*dxp(2,1,ip) + dxp(1,2,ip)*dxp(2,2,ip)
@@ -39,10 +39,10 @@ do ip=1,NP
   ! prod -> |v'|^2
   prod = dxp(2,1,ip)*dxp(2,1,ip) + dxp(2,2,ip)*dxp(2,2,ip)
   
-  ftle(ip,2)=ftle(ip,2)+dlog(prod)/2.d0
-  lyap(2)=lyap(2)+norm*dlog(prod)/2.d0
+  ftle(ip,2)=ftle(ip,2)+dlog(prod)/2.d0    ! each particle
+  lyap(2)=lyap(2)+norm*dlog(prod)/2.d0     ! mean over the particles
 	
-  ! normalization
+  ! normalization to norm L2 = 1 
   dxp(1,1,ip) = dxp(1,1,ip)/dsqrt(scra)
   dxp(1,2,ip) = dxp(1,2,ip)/dsqrt(scra)
   dxp(2,1,ip) = dxp(2,1,ip)/dsqrt(prod)
@@ -55,7 +55,7 @@ return
 end
 
 ! --------------------------------------------------------------
-! Gram-Schmidt orthonormalization
+! Gram-Schmidt orthonormalization  !! OLD OUTSIDE GPU
 subroutine rescale2(dxp)
 use modlag
 use commsim

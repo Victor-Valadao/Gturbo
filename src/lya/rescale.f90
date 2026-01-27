@@ -61,7 +61,7 @@ integer :: i,j,seed,i0,j0
 real :: rann,a2
 
 ! a = 2 sqrt(2) sqrt(3): corr, def dw, trunc
-! white space-time noise
+! homogeneous space-time noise in physical space
 
 do j = 1, NY
 do i = 1, NX

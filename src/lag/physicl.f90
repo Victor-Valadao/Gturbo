@@ -1,6 +1,7 @@
 ! Computation of important physical operators, including:
 ! nonlinear term         -> nlt()
 ! velocity field         -> vel()
+! velocity gradients     -> grads()
 ! physical space product -> produ()
 ! circular truncation f  -> trunc()
 
